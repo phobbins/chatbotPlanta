@@ -13,7 +13,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Configurar Gemini
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel(model_name="models/gemini-pro")
+model = genai.GenerativeModel(model_name="models/gemini-2.5-flash")
 
 # Comando /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -34,3 +34,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
