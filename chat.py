@@ -108,6 +108,7 @@ Respuesta:
 
     try:
         response = model.generate_content(prompt)
+        #log_interaccion(user_input, response.text)
         await update.message.reply_text(response.text)
     except Exception as e:
         print("Error al generar contenido con Gemini:", e)
