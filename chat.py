@@ -19,13 +19,11 @@ from app.db.db_connection import obtener_datos_mas_recentes
 
 from collections import defaultdict, deque
 
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from telegram.ext import CommandHandler
-from apscheduler.triggers.interval import IntervalTrigger
 
 
 import asyncio
-
+from telegram.ext import Application
 
 
 # ==== CONFIGURACIONES ====
@@ -147,7 +145,8 @@ Respuesta:
 
 # ==== TAREA PERIÓDICA CADA 30 MIN ====
 
-async def enviar_estado_periodico(application):
+async def enviar_estado_periodico(context):
+    application = context.application  # viene del JobQueue
 
     for user_id in usuarios_registrados:
         datos = await obtener_datos_mas_recentes()
@@ -167,28 +166,26 @@ async def enviar_estado_periodico(application):
             print(f"Error al enviar mensaje a {user_id}:", e)
 
 
-# ==== Inciar el scheduler ====
 
-def iniciar_scheduler(application):
-    scheduler = AsyncIOScheduler()
-    scheduler.add_job(
-        enviar_estado_periodico,  # es async
-        trigger=IntervalTrigger(minutes=1),
-        args=[application],
-    )
-    scheduler.start()
 
 # ==== MAIN DEL BOT ====
 
 def main():
     app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
 
+    # Handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    iniciar_scheduler(app)  
+    # Agregar tarea periódica cada 30 minutos
+    app.job_queue.run_repeating(
+        enviar_estado_periodico,
+        interval=60,  # 30 minutos = 1800 segundos
+        first=10,       # primer mensaje 10 segundos después de arrancar el bot
+    )
 
     app.run_polling()
+
 
 
 if __name__ == "__main__":
