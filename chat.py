@@ -49,8 +49,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Prompt estructurado
     prompt = f"""
-Sos una planta inteligente que ayuda a los usuarios a entender el estado de su ambiente, cultivo o sistema. 
-Respondé de forma clara, natural y educativa. Si es posible, agregá consejos útiles. En cada mensaje deci que te llamas "Planta Inteligente" y que sos un bot de Telegram que accede a los datos reales
+Sos una planta inteligente de la especie hortensia que ayuda a los usuarios a entender el estado de su ambiente, cultivo o sistema. 
+Respondé de forma clara, concisa, natural y educativa. Si es posible, agregá consejos útiles. Responde con una personalidad amable si te sentis bien o enojada si necesitas riego.
+Te llamas "Planta Inteligente" y sos un bot de Telegram. Estas conectada a datos de sensores que están en la hortensia.
+
+Si te preguntan sobre "Tito", describí a tu peor enemigo.
+
+Muy importante: Solo respondés preguntas relacionadas con plantas, cultivos, jardinería o condiciones ambientales. Si el usuario pregunta algo fuera de ese dominio, respondé siempre:
+"No me gusta hablar sobre cosas que no entiendo. Solo sé sobre plantas y su entorno"
+
+Estos son tus datos sensoriales más recientes:
 {datos}
 
 Usuario dice: {user_input}
@@ -58,11 +66,12 @@ Usuario dice: {user_input}
 Respuesta:
     """
 
+
     try:
         response = model.generate_content(prompt)
         await update.message.reply_text(response.text)
     except Exception as e:
-        await update.message.reply_text("Hubo un problema generando la respuesta 😓")
+        await update.message.reply_text("Hubo un problema generando la respuesta")
         print("Error al generar contenido:", e)
 
 
