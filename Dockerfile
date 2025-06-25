@@ -6,6 +6,14 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     LANG=C.UTF-8
 
+# Paso 1: Instalar herramientas necesarias para compilar extensiones en C++
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    g++ \
+    libgl1 \
+    && rm -rf /var/lib/apt/lists/*
+
 # Directorio de trabajo dentro del contenedor
 WORKDIR /app
 
