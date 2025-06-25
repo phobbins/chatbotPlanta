@@ -10,12 +10,12 @@ import google.generativeai as genai
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 import asyncpg
-from rag.loader import crear_vectorstore, recuperar_contexto_rag, cargar_todos_los_documentos
+from app.rag.loader import crear_vectorstore, recuperar_contexto_rag, cargar_todos_los_documentos
 
 
-from nlp.intent_llm import detectar_intencion_llm
-from db.db_connection import obtener_estado_hace_tiempo
-from db.db_connection import obtener_datos_mas_recentes
+from app.nlp.intent_llm import detectar_intencion_llm
+from app.db.db_connection import obtener_estado_hace_tiempo
+from app.db.db_connection import obtener_datos_mas_recentes
 
 
 # ==== CONFIGURACIONES ====
