@@ -23,7 +23,7 @@ from telegram.ext import CommandHandler
 
 
 import asyncio
-
+from telegram.ext import Application
 
 
 # ==== CONFIGURACIONES ====
@@ -145,7 +145,8 @@ Respuesta:
 
 # ==== TAREA PERIÓDICA CADA 30 MIN ====
 
-async def enviar_estado_periodico(application):
+async def enviar_estado_periodico(context):
+    application = context.application  # viene del JobQueue
 
     for user_id in usuarios_registrados:
         datos = await obtener_datos_mas_recentes()
@@ -171,9 +172,20 @@ async def enviar_estado_periodico(application):
 
 def main():
     app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
+
+    # Handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+
+    # Agregar tarea periódica cada 30 minutos
+    app.job_queue.run_repeating(
+        enviar_estado_periodico,
+        interval=60,  # 30 minutos = 1800 segundos
+        first=10,       # primer mensaje 10 segundos después de arrancar el bot
+    )
+
     app.run_polling()
+
 
 
 if __name__ == "__main__":
