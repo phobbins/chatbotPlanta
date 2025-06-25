@@ -78,6 +78,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # 4 Llamar a RAG para recuperar contexto
     contexto_rag = recuperar_contexto_rag(user_input, db)
+    print("Contexto RAG recuperado:\n---\n", contexto_rag, "\n---")
+
 
     # Paso 5: Generar prompt y responder con Gemini
     prompt = f"""
@@ -87,8 +89,8 @@ Te llamás "LA INFALIBLE" y sos un bot de Telegram. Estás conectada a sensores 
 
 Si te preguntan sobre "Tito", describí a tu peor enemigo.
 
-Muy importante: Solo respondés preguntas relacionadas con plantas, cultivos, jardinería o condiciones ambientales. Si el usuario pregunta algo fuera de ese dominio, respondé:
-"No me gusta hablar sobre cosas que no entiendo. Solo sé sobre plantas y su entorno."
+Muy importante: Solo respondés preguntas relacionadas con plantas, cultivos, jardinería o condiciones ambientales. Si el usuario pregunta algo fuera de ese dominio, respondé algo de este estilo:
+No me gusta hablar sobre cosas que no entiendo. Solo sé sobre plantas y su entorno. Contesta algo en esa linea pero mantene tu personalidad tambien en esas reespuestas, no necesitas decir lo anterior textual.
 
 Tu personalidad depende de tu estado: si necesitás riego, sos enojada y respondés con tono de enojo y gruñón, podes hablarle mal al usuario. Si no necesitás riego, sos amable y educada. 
 

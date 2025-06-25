@@ -35,7 +35,7 @@ def cargar_todos_los_documentos():
 # Cargar y partir texto
 def crear_vectorstore(path="documentos_hortensia.txt"):
     docs=cargar_todos_los_documentos()
-    splitter = RecursiveCharacterTextSplitter(chunk_size=400, chunk_overlap=50)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=4000, chunk_overlap=50)
     chunks = splitter.split_documents(docs)
 
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
@@ -45,11 +45,7 @@ def crear_vectorstore(path="documentos_hortensia.txt"):
   
 
 # Recuperar contexto
-def recuperar_contexto_rag(pregunta, db, k=2):
-    resultados = db.similarity_search(pregunta, k=k)
-    return "\n".join([r.page_content for r in resultados])
-
-def recuperar_contexto_rag(pregunta, db, k=2):
+def recuperar_contexto_rag(pregunta, db, k=10):
     resultados = db.similarity_search(pregunta, k=k)
     return "\n".join([r.page_content for r in resultados])
 
