@@ -44,7 +44,7 @@ db = crear_vectorstore(docs)
 memoria_usuarios = defaultdict(lambda: deque(maxlen=5))
 
 # Estado del chat para los mensajes automaticos
-CHAT_ID_REGISTRADO = None
+usuarios_registrados = set()
 
 
 def formatear_datos_sensores(data: dict, tiempo_desc: str = "más recientes") -> str:
@@ -61,8 +61,8 @@ def formatear_datos_sensores(data: dict, tiempo_desc: str = "más recientes") ->
 # ==== TELEGRAM BOT HANDLERS ====
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global CHAT_ID_REGISTRADO
-    CHAT_ID_REGISTRADO = update.effective_chat.id
+    user_id = update.effective_user.id
+    usuarios_registrados.add(user_id)
     await update.message.reply_text("¡Hola! Soy tu planta inteligente. ¿Qué querés saber hoy?")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -95,7 +95,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # 4 Llamar a RAG para recuperar contexto
     contexto_rag = recuperar_contexto_rag(user_input, db)
-    print("Contexto RAG recuperado:\n---\n", contexto_rag, "\n---")
+    #print("Contexto RAG recuperado:\n---\n", contexto_rag, "\n---")
 
     # Paso 5: Recuperar historial
     historial = "\n".join(memoria_usuarios[user_id])
@@ -146,28 +146,29 @@ Respuesta:
 # ==== TAREA PERIÓDICA CADA 30 MIN ====
 
 async def enviar_estado_periodico(application):
-    global CHAT_ID_REGISTRADO
-    if not CHAT_ID_REGISTRADO:
-        return
 
-    datos = await obtener_datos_mas_recentes()
-    if not datos:
-        return
+    for user_id in usuarios_registrados:
+        datos = await obtener_datos_mas_recentes()
+        if not datos:
+            respuesta = "No estoy pudiendo obtener mis datos actuales. Revisá mis sensores!!!"
+        else:
+            mensaje_estado = formatear_datos_sensores(datos)
 
-    mensaje_estado = formatear_datos_sensores(datos)
+            if datos["necesita_riego"]:
+                respuesta = f"¡Estoy seca y muy molesta! ¡Regame ya! \n\n{mensaje_estado}"
+            else:
+                respuesta = f"Solo pasaba a saludar. Estoy bien por ahora \n\n{mensaje_estado}"
 
-    if datos["necesita_riego"]:
-        respuesta = f"¡Estoy seca y muy molesta! ¡Regame ya! \n\n{mensaje_estado}"
-    else:
-        respuesta = f"Solo pasaba a saludar. Estoy bien por ahora \n\n{mensaje_estado}"
-
-    await application.bot.send_message(chat_id=CHAT_ID_REGISTRADO, text=respuesta)
+        try:
+            await application.bot.send_message(chat_id=user_id, text=respuesta)
+        except Exception as e:
+            print(f"Error al enviar mensaje a {user_id}:", e)
 
 
 # ==== Inciar el scheduler ====
 async def iniciar_scheduler(app):
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(lambda: enviar_estado_periodico(app), "interval", minutes=30)
+    scheduler.add_job(lambda: enviar_estado_periodico(app), "interval", minutes=1)
     scheduler.start()
 
 # ==== MAIN DEL BOT ====
