@@ -19,9 +19,7 @@ from app.db.db_connection import obtener_datos_mas_recentes
 
 from collections import defaultdict, deque
 
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from telegram.ext import CommandHandler
-from apscheduler.triggers.interval import IntervalTrigger
 
 
 import asyncio
@@ -167,27 +165,14 @@ async def enviar_estado_periodico(application):
             print(f"Error al enviar mensaje a {user_id}:", e)
 
 
-# ==== Inciar el scheduler ====
 
-def iniciar_scheduler(application):
-    scheduler = AsyncIOScheduler()
-    scheduler.add_job(
-        enviar_estado_periodico,  # es async
-        trigger=IntervalTrigger(minutes=1),
-        args=[application],
-    )
-    scheduler.start()
 
 # ==== MAIN DEL BOT ====
 
 def main():
     app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
-
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-
-    iniciar_scheduler(app)  
-
     app.run_polling()
 
 
