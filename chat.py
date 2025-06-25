@@ -23,7 +23,6 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from telegram.ext import CommandHandler
 
 import asyncio
-import nest_asyncio
 
 
 
@@ -165,22 +164,25 @@ async def enviar_estado_periodico(application):
     await application.bot.send_message(chat_id=CHAT_ID_REGISTRADO, text=respuesta)
 
 
+# ==== Inciar el scheduler ====
+async def iniciar_scheduler(app):
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(lambda: enviar_estado_periodico(app), "interval", minutes=30)
+    scheduler.start()
 
 # ==== MAIN DEL BOT ====
 
-async def main():
+def main():
     app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    scheduler = AsyncIOScheduler()
-    scheduler.add_job(lambda: enviar_estado_periodico(app), "interval", minutes=30)
-    scheduler.start()
+    # Iniciar scheduler de forma asíncrona sin volver async la main
+    asyncio.get_event_loop().create_task(iniciar_scheduler(app))
 
-    await app.run_polling()
+    app.run_polling()
 
 
 if __name__ == "__main__":
-    nest_asyncio.apply()
-    asyncio.get_event_loop().run_until_complete(main())
+    main()
