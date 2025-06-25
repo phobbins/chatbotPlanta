@@ -5,12 +5,12 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import DirectoryLoader, TextLoader, PyPDFLoader
 from functools import partial
 from langchain_huggingface import HuggingFaceEmbeddings
-
+import os
 
 
 
 def cargar_todos_los_documentos():
-    directorio = "rag/documentos"
+    directorio =  os.path.join(os.path.dirname(__file__), "documentos")
 
     # Forzar UTF-8 al cargar archivos .txt
     loader_txt = DirectoryLoader(

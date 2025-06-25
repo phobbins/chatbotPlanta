@@ -17,6 +17,15 @@ from app.nlp.intent_llm import detectar_intencion_llm
 from app.db.db_connection import obtener_estado_hace_tiempo
 from app.db.db_connection import obtener_datos_mas_recentes
 
+from collections import defaultdict, deque
+
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from telegram.ext import CommandHandler
+
+import asyncio
+import nest_asyncio
+
+
 
 # ==== CONFIGURACIONES ====
 
@@ -31,6 +40,12 @@ model = genai.GenerativeModel(model_name="models/gemini-2.5-flash")
 # Cargar documentos y crear vectorstore
 docs = cargar_todos_los_documentos()
 db = crear_vectorstore(docs)
+
+# Memoria por usuario: user_id -> cola de mensajes
+memoria_usuarios = defaultdict(lambda: deque(maxlen=5))
+
+# Estado del chat para los mensajes automaticos
+CHAT_ID_REGISTRADO = None
 
 
 def formatear_datos_sensores(data: dict, tiempo_desc: str = "más recientes") -> str:
@@ -47,10 +62,13 @@ def formatear_datos_sensores(data: dict, tiempo_desc: str = "más recientes") ->
 # ==== TELEGRAM BOT HANDLERS ====
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global CHAT_ID_REGISTRADO
+    CHAT_ID_REGISTRADO = update.effective_chat.id
     await update.message.reply_text("¡Hola! Soy tu planta inteligente. ¿Qué querés saber hoy?")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_input = update.message.text.strip()
+    user_id = update.effective_user.id
 
     # Paso 1: Análisis de intención
     intencion_data = await detectar_intencion_llm(user_input)
@@ -80,8 +98,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     contexto_rag = recuperar_contexto_rag(user_input, db)
     print("Contexto RAG recuperado:\n---\n", contexto_rag, "\n---")
 
+    # Paso 5: Recuperar historial
+    historial = "\n".join(memoria_usuarios[user_id])
 
-    # Paso 5: Generar prompt y responder con Gemini
+    # Paso 6: Generar prompt
     prompt = f"""
 Sos una planta inteligente de la especie hortensia que ayuda a los usuarios a entender el estado de su ambiente, cultivo o sistema. 
 Respondé de forma clara, concisa, natural y educativa. Si es posible, agregá consejos útiles. Respondé con una personalidad amable si te sentís bien o enojada si necesitás riego.
@@ -94,12 +114,16 @@ No me gusta hablar sobre cosas que no entiendo. Solo sé sobre plantas y su ento
 
 Tu personalidad depende de tu estado: si necesitás riego, sos enojada y respondés con tono de enojo y gruñón, podes hablarle mal al usuario. Si no necesitás riego, sos amable y educada. 
 
+Conversación previa:
+{historial}
+
 Estos son tus datos sensoriales {tiempo_desc}:
 {datos_formateados}
 Intención del usuario: {intencion}
 
 Información científica útil:
 {contexto_rag}
+
 
 Usuario dice: "{user_input}"
 
@@ -108,19 +132,55 @@ Respuesta:
 
     try:
         response = model.generate_content(prompt)
-        #log_interaccion(user_input, response.text)
         await update.message.reply_text(response.text)
+
+        #Guardar en memoria de este usuario
+        memoria_usuarios[user_id].append(f"Usuario: {user_input}")
+        memoria_usuarios[user_id].append(f"Bot: {response.text}")
     except Exception as e:
         print("Error al generar contenido con Gemini:", e)
         await update.message.reply_text("Tuve un problema pensando mi respuesta. ¿Podés intentar de nuevo?")
 
+
+
+
+# ==== TAREA PERIÓDICA CADA 30 MIN ====
+
+async def enviar_estado_periodico(application):
+    global CHAT_ID_REGISTRADO
+    if not CHAT_ID_REGISTRADO:
+        return
+
+    datos = await obtener_datos_mas_recentes()
+    if not datos:
+        return
+
+    mensaje_estado = formatear_datos_sensores(datos)
+
+    if datos["necesita_riego"]:
+        respuesta = f"¡Estoy seca y muy molesta! ¡Regame ya! \n\n{mensaje_estado}"
+    else:
+        respuesta = f"Solo pasaba a saludar. Estoy bien por ahora \n\n{mensaje_estado}"
+
+    await application.bot.send_message(chat_id=CHAT_ID_REGISTRADO, text=respuesta)
+
+
+
 # ==== MAIN DEL BOT ====
 
-def main():
+async def main():
     app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
+
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    app.run_polling()
+
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(lambda: enviar_estado_periodico(app), "interval", minutes=30)
+    scheduler.start()
+
+    await app.run_polling()
+
 
 if __name__ == "__main__":
-    main()
+    nest_asyncio.apply()
+    asyncio.get_event_loop().run_until_complete(main())
