@@ -3,7 +3,7 @@ import json
 import re
 from dotenv import load_dotenv
 
-model = genai.GenerativeModel(model_name="models/gemini-1.5-flash")
+model = genai.GenerativeModel(model_name="models/gemini-2.5-flash")
 
 async def detectar_intencion_llm(texto_usuario: str) -> dict:
     prompt = f"""

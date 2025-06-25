@@ -21,6 +21,8 @@ from collections import defaultdict, deque
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from telegram.ext import CommandHandler
+from apscheduler.triggers.interval import IntervalTrigger
+
 
 import asyncio
 
@@ -166,9 +168,14 @@ async def enviar_estado_periodico(application):
 
 
 # ==== Inciar el scheduler ====
-async def iniciar_scheduler(app):
+
+def iniciar_scheduler(application):
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(lambda: enviar_estado_periodico(app), "interval", minutes=1)
+    scheduler.add_job(
+        enviar_estado_periodico,  # es async
+        trigger=IntervalTrigger(minutes=1),
+        args=[application],
+    )
     scheduler.start()
 
 # ==== MAIN DEL BOT ====
@@ -179,8 +186,7 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    # Iniciar scheduler de forma asíncrona sin volver async la main
-    asyncio.get_event_loop().create_task(iniciar_scheduler(app))
+    iniciar_scheduler(app)  
 
     app.run_polling()
 
