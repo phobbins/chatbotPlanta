@@ -13,7 +13,7 @@ async def obtener_datos_mas_recentes():
 async def obtener_estado_hace_tiempo(intervalo: timedelta):
     try:
         conn = await asyncpg.connect(DATABASE_URL)
-        ahora = datetime.utcnow()
+        ahora = datetime.utcnow()-timedelta(hours=3)  # Ajuste de zona horaria a UTC-3 (Uruguay)
         momento_inicio = ahora - intervalo - timedelta(minutes=5)
         momento_objetivo = ahora - intervalo + timedelta(minutes=5)
 
