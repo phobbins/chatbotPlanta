@@ -1,0 +1,18 @@
+{
+  "usuarios": [
+    7591632490,
+    7774806111
+  ],
+  "configuraciones": {
+    "7591632490": {
+      "intervalo": 600,
+      "activo": true,
+      "ultimo_envio": 1750896729.6961956
+    },
+    "7774806111": {
+      "intervalo": 1800,
+      "activo": true,
+      "ultimo_envio": 1750896429.6943595
+    }
+  }
+}
