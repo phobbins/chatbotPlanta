@@ -1,18 +1,39 @@
 {
   "usuarios": [
+    6798994898,
     7591632490,
     7774806111
   ],
   "configuraciones": {
     "7591632490": {
-      "intervalo": 600,
+      "intervalo": 1800,
       "activo": true,
-      "ultimo_envio": 1750896729.6961956
+      "ultimo_envio": 1750904600.2738326
     },
     "7774806111": {
       "intervalo": 1800,
       "activo": true,
-      "ultimo_envio": 1750896429.6943595
+      "ultimo_envio": 1750904600.2738326
+    },
+    "6798994898": {
+      "intervalo": 1800,
+      "activo": true,
+      "ultimo_envio": 1750905560.2807884
+    },
+    "6798994898": {
+      "intervalo": 1800,
+      "activo": true,
+      "ultimo_envio": 1750905784.423487
+    },
+    "7591632490": {
+      "intervalo": 1800,
+      "activo": true,
+      "ultimo_envio": 1750905724.4105134
+    },
+    "7774806111": {
+      "intervalo": 1800,
+      "activo": true,
+      "ultimo_envio": 1750905724.4105134
     }
   }
 }
