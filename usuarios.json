@@ -7,7 +7,37 @@
   ],
   "configuraciones": {
     "7591632490": {
-      "intervalo": 600,
+      "intervalo": 1800,
+      "activo": true,
+      "ultimo_envio": 1750971969.230423
+    },
+    "7774806111": {
+      "intervalo": 1800,
+      "activo": true,
+      "ultimo_envio": 1750971969.230423
+    },
+    "6798994898": {
+      "intervalo": 1800,
+      "activo": true,
+      "ultimo_envio": 1750904600.2738326
+    },
+    "7774806111": {
+      "intervalo": 1800,
+      "activo": true,
+      "ultimo_envio": 1750904600.2738326
+    },
+    "6798994898": {
+      "intervalo": 1800,
+      "activo": true,
+      "ultimo_envio": 1750905560.2807884
+    },
+    "6798994898": {
+      "intervalo": 1800,
+      "activo": true,
+      "ultimo_envio": 1750905784.423487
+    },
+    "7591632490": {
+      "intervalo": 1800,
       "activo": true,
       "ultimo_envio": 1750972869.2403374
     },
