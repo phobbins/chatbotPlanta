@@ -1,21 +1,12 @@
 {
   "usuarios": [
     6798994898,
+    6798994898,
     7591632490,
     7774806111
   ],
   "configuraciones": {
     "7591632490": {
-      "intervalo": 1800,
-      "activo": true,
-      "ultimo_envio": 1750971969.230423
-    },
-    "7774806111": {
-      "intervalo": 1800,
-      "activo": true,
-      "ultimo_envio": 1750971969.230423
-    },
-    "6798994898": {
       "intervalo": 600,
       "activo": true,
       "ultimo_envio": 1750972869.2403374
