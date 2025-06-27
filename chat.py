@@ -55,6 +55,7 @@ memoria_usuarios = defaultdict(lambda: deque(maxlen=5))
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_input = update.message.text.strip()
     user_id = update.effective_user.id
+    print(f"Mensaje recibido de {user_id}: {user_input}")
 
     # Paso 1: Análisis de intención
     intencion_data = await detectar_intencion_llm(user_input)
