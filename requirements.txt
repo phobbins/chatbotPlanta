@@ -10,3 +10,5 @@ torch
 asyncpg
 apscheduler
 pypdf
+numpy=1.26.4
+langchain-huggingface
