@@ -10,6 +10,6 @@ torch
 asyncpg
 apscheduler
 pypdf
-numpy=1.26.4
+numpy==1.26.4
 langchain-huggingface
 # The following line is commented out because it is not compatible with the current version of langchain
